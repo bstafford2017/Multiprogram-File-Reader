@@ -27,9 +27,9 @@ int main(int argc, char *argv[]){
 	sub->sem_op = -1;
     sub->sem_flg = IPC_NOWAIT;
 
-    for(int i = 0; i < 6; i++){
+    //for(int i = 0; i < 6; i++){
         //cout << argv[i] << " ";
-    }
+    //}
     //cout << endl;
 
     // Close read
@@ -103,7 +103,7 @@ int main(int argc, char *argv[]){
         // Get file position
         string shm_data = (char *)shmat(atoi(argv[4]), (void *)0, 0);
         int position = atoi(shm_data.substr(3, shm_data.size() - 1).c_str());
-
+        cout << position << endl;
         char *waste = (char *)calloc(sizeof(char), position + 1);
         file.read(waste, position);
         free(waste);
