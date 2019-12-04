@@ -277,7 +277,7 @@ int main(int argc, char *argv[]){
                 cout << "Failed to set value to 0: " << strerror(errno) << endl;
                 exit(1);
             }
-            cout << "SC decremented to " << semctl(sem_value, 0, GETVAL, 0) << endl;
+            //cout << "SC decremented to " << semctl(sem_value, 0, GETVAL, 0) << endl;
         }
     }
 

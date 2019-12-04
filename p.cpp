@@ -52,7 +52,7 @@ int main(int argc, char *argv[]){
                     cout << "Failed to set value to 1: " << strerror(errno) << endl;
                     exit(1);
                 }
-                cout << argv[5] << " incremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
+                //cout << argv[5] << " incremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
                 break;
             }
             
@@ -65,7 +65,7 @@ int main(int argc, char *argv[]){
                 //cout << argv[5] << " exiting" << endl;
                 exit(0);
             }
-            usleep(1000);
+            //usleep(1000);
         }
 
         // Check if two grabbed the semaphore, then decrement
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]){
                 cout << "Failed to set value to 1: " << strerror(errno) << endl;
                 exit(1);
             }
-            cout << argv[5] << " decremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
+            //cout << argv[5] << " decremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
             close(atoi(argv[2]));
             free(operations);
             //cout << argv[5] << " exiting" << endl;
@@ -104,20 +104,22 @@ int main(int argc, char *argv[]){
         string shm_data = (char *)shmat(atoi(argv[4]), (void *)0, 0);
         int position = atoi(shm_data.substr(3, shm_data.size() - 1).c_str());
 
+        char *waste = (char *)calloc(sizeof(char), position + 1);
+        file.read(waste, position);
+        free(waste);
+
         // Read until i equals random
         int i = 0;
         string data = argv[5];
         while(file.get(character)){
             i++;
-            if(i > position){
-                data += character;
-            }
-            if(i == random + position) break;
+            data += character;
+            if(i == random) break;
         }
 
         // If done, append the number of characters
-        if(random + position != i){
-            data += "\nCharacters read: " + to_string(i);
+        if(random != i){
+            data += "\nCharacters read: " + to_string(position + i);
         }
         
         // String pipe terminator
@@ -125,7 +127,7 @@ int main(int argc, char *argv[]){
         file.close();
 
         // Write random to shared memory
-        shm_data = argv[5] + to_string(i);
+        shm_data = argv[5] + to_string(i + position);
         char *data_pointer = (char *)shmat(atoi(argv[4]), (void *)0, 0);
         strcpy(data_pointer, shm_data.c_str());
         //cout << data_pointer << endl;
@@ -139,14 +141,14 @@ int main(int argc, char *argv[]){
 
         // Means EOF was hit
         bool done = false;
-        if(random + position != i){
+        if(random != i){
             // Increment to 3 to let everyone know data is empty
             operations->sem_op = 2;
             if(semop(atoi(argv[3]), operations, 1) != 0){
                 cout << "Failed to set value to 3: " << strerror(errno) << endl;
                 exit(1);
             }
-            cout << argv[5] << " incremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
+            //cout << argv[5] << " incremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
             done = true;
 
             // Put the number of characters read into pipe
@@ -161,7 +163,7 @@ int main(int argc, char *argv[]){
                 exit(1);
             }
             operations->sem_op = 1;
-            cout << argv[5] << " incremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
+            //cout << argv[5] << " incremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
         }
     }
 
