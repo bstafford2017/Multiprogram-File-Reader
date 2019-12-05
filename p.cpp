@@ -52,7 +52,7 @@ int main(int argc, char *argv[]){
                     cout << "Failed to set value to 3: " << strerror(errno) << endl;
                     exit(1);
                 }
-                cout << argv[5] << " incremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
+                //cout << argv[5] << " incremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
                 break;
             }
             
@@ -61,12 +61,13 @@ int main(int argc, char *argv[]){
             if(semctl(atoi(argv[3]), 0, GETVAL, 0) == 0){
                 close(atoi(argv[2]));
                 free(operations);
+                free(sub);
                 cout << argv[5] << " exiting" << endl;
                 exit(0);
             }
             //cout << argv[5] << " waiting" << endl;
             //sleep(5);
-            usleep(1000);
+            usleep(2000);
             //cout << argv[5] << " stopped waiting" << endl;
         }
 
@@ -88,7 +89,7 @@ int main(int argc, char *argv[]){
         if(semctl(atoi(argv[3]), 0, GETVAL, 0) != 3){
             sub->sem_op = -1;
             semop(atoi(argv[3]), sub, 1);
-            cout << argv[5] << " decremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
+            //cout << argv[5] << " decremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
             continue;
         }
 
@@ -157,7 +158,7 @@ int main(int argc, char *argv[]){
                 cout << "Failed to set value to -3: " << strerror(errno) << endl;
                 exit(1);
             }
-            cout << argv[5] << " decremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
+            //cout << argv[5] << " decremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
             done = true;
 
         }
@@ -170,7 +171,7 @@ int main(int argc, char *argv[]){
                 cout << "Failed to set value to -1: " << strerror(errno) << endl;
                 exit(1);
             }
-            cout << argv[5] << " decremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
+            //cout << argv[5] << " decremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
         }
     }
 

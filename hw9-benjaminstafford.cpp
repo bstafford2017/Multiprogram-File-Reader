@@ -244,12 +244,14 @@ int main(int argc, char *argv[]){
 
         ofstream file;
         file.open("hw9.out", fstream::app);
-
+cout << "here1" << endl;
         // Get shared memory segment
-        string shm_data = (char *)shmat(shmid, (void *)0, 0);
-        shmdt(shm_data.c_str());
+        string shm_data = (char *)shmat(shmid, 0, 0);
+        cout << "here2" << endl;
+        //shmdt(shm_data.c_str());
         string program = shm_data.substr(0, 3);
 
+cout << "here3" << endl;
         // Check which child returns data
         string data;
         if(program == "_p1"){
@@ -279,18 +281,16 @@ int main(int argc, char *argv[]){
             break;
         } else {
             // Increment to 0 to let reindeer get semaphore
-            struct sembuf *operations = (struct sembuf *)calloc(sizeof(sembuf), 1);
-            operations->sem_num = 0;
             operations->sem_op = 1;
-            operations->sem_flg = 0;
             if(semop(sem_value, operations, 1) != 0){
                 cout << "Failed to set value to 0: " << strerror(errno) << endl;
                 exit(1);
             }
-            cout << "SC decremented to " << semctl(sem_value, 0, GETVAL, 0) << endl;
-            free(operations);
+            //cout << "SC decremented to " << semctl(sem_value, 0, GETVAL, 0) << endl;
         }
     }
+
+    free(operations);
 
     waitpid(_p1, 0, 0);
     waitpid(_p2, 0, 0);
@@ -335,5 +335,4 @@ int main(int argc, char *argv[]){
     close(pipe8[1]);
     close(pipe9[0]);
     close(pipe9[1]);
-    exit(0);
 }
