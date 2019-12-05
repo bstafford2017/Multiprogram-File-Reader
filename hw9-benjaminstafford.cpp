@@ -50,12 +50,15 @@ int main(int argc, char *argv[]){
         exit(1);
     }
 
-    // Create second semaphore
-    /*int sem_value_2 = semget(IPC_PRIVATE, 1, IPC_CREAT | 0660);
-    if(sem_value_2 < 0){
-        cout << "Error creating semaphore: " << strerror(errno) << endl;
+    // Increment semaphore starting value to 1
+    struct sembuf *operations = (struct sembuf *)calloc(sizeof(sembuf), 1);
+    operations->sem_num = 0;
+    operations->sem_op = 2;
+    operations->sem_flg = 0;
+    if(semop(sem_value, operations, 1) != 0){
+        cout << "Failed to set value to 0: " << strerror(errno) << endl;
         exit(1);
-    }*/
+    }
 
     // Create shared memory segment
     int shmid = shmget(IPC_PRIVATE, 30, 0666 | IPC_CREAT); 
@@ -216,7 +219,7 @@ int main(int argc, char *argv[]){
 
     // While the file is not complete
     bool done = false;
-    while(semctl(sem_value, 0, GETVAL, 0) != 3){
+    while(1){
 
         // Wait until a program has written back
         while(1){
@@ -225,15 +228,15 @@ int main(int argc, char *argv[]){
                 exit(1);
             }
 
-            if(semctl(sem_value, 0, GETVAL, 0) == 4){
-                if(semctl(sem_value, 0, GETVAL, 0) != 4){
+            if(semctl(sem_value, 0, GETVAL, 0) == 1){
+                if(semctl(sem_value, 0, GETVAL, 0) != 1){
                     continue;
                 }
                 break;
             }
 
             // If file is completely read
-            if(semctl(sem_value, 0, GETVAL, 0) == 3){
+            if(semctl(sem_value, 0, GETVAL, 0) == 0){
                 done = true;
                 break;
             }
@@ -275,17 +278,18 @@ int main(int argc, char *argv[]){
         if(done){
             break;
         } else {
+            // Increment to 0 to let reindeer get semaphore
             struct sembuf *operations = (struct sembuf *)calloc(sizeof(sembuf), 1);
             operations->sem_num = 0;
-            operations->sem_op = -4;
+            operations->sem_op = 1;
             operations->sem_flg = 0;
             if(semop(sem_value, operations, 1) != 0){
                 cout << "Failed to set value to 0: " << strerror(errno) << endl;
                 exit(1);
             }
             cout << "SC decremented to " << semctl(sem_value, 0, GETVAL, 0) << endl;
+            free(operations);
         }
-        cout << "santa " << semctl(sem_value, 0, GETVAL, 0) << endl;
     }
 
     waitpid(_p1, 0, 0);

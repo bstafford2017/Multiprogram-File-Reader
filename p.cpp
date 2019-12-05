@@ -43,25 +43,25 @@ int main(int argc, char *argv[]){
             if(semctl(atoi(argv[3]), 0, GETVAL, 0) < 0){
                 cout << "Error getting semaphore value: " << strerror(errno) << endl;
                 exit(1);
-            } else if(semctl(atoi(argv[3]), 0, GETVAL, 0) == 0){
-                if(semctl(atoi(argv[3]), 0, GETVAL, 0) != 0){
+            } else if(semctl(atoi(argv[3]), 0, GETVAL, 0) == 2){
+                if(semctl(atoi(argv[3]), 0, GETVAL, 0) != 2){
                     continue;
                 }
+                operations->sem_op = 1;
                 if(semop(atoi(argv[3]), operations, 1) != 0){
-                    cout << "Failed to set value to 1: " << strerror(errno) << endl;
+                    cout << "Failed to set value to 3: " << strerror(errno) << endl;
                     exit(1);
                 }
-                cout << argv[5] << " incremented#1 to  " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
+                cout << argv[5] << " incremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
                 break;
             }
             
             //cout << result;
             // If file is completely read
-            if(semctl(atoi(argv[3]), 0, GETVAL, 0) == 3){
-                // Close write & free
+            if(semctl(atoi(argv[3]), 0, GETVAL, 0) == 0){
                 close(atoi(argv[2]));
                 free(operations);
-                //cout << argv[5] << " exiting" << endl;
+                cout << argv[5] << " exiting" << endl;
                 exit(0);
             }
             //cout << argv[5] << " waiting" << endl;
@@ -71,7 +71,7 @@ int main(int argc, char *argv[]){
         }
 
         // Check if two grabbed the semaphore, then decrement
-        if(semctl(atoi(argv[3]), 0, GETVAL, 0) != 1){
+        /*if(semctl(atoi(argv[3]), 0, GETVAL, 0) != 1){
             if(semop(atoi(argv[3]), sub, 1) != 0){
                 cout << "Failed to set value to 1: " << strerror(errno) << endl;
                 exit(1);
@@ -82,34 +82,22 @@ int main(int argc, char *argv[]){
             free(operations);
             cout << argv[5] << " exiting" << endl;
             exit(0);
-        }
-
-        /*bool grabbedTwo = false;
-        if(semctl(atoi(argv[3]), 0, GETVAL, 0) == 2){
-            semop(atoi(argv[3]), sub, 1);
-            cout << argv[5] << " decremented--2 to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
-            grabbedTwo = true;
-            exit(1);
-        } else if(semctl(atoi(argv[3]), 0, GETVAL, 0) == 3){
-            sub->sem_op = -2;
-            semop(atoi(argv[3]), sub, 1);
-            cout << argv[5] << " decremented--2 to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
-            grabbedTwo = true;
-            sub->sem_op = -1;
-            exit(1);
-        }
-        if(grabbedTwo){
-            continue;
         }*/
+
+        // If multiple grabs, decrement and continue
+        if(semctl(atoi(argv[3]), 0, GETVAL, 0) != 3){
+            sub->sem_op = -1;
+            semop(atoi(argv[3]), sub, 1);
+            cout << argv[5] << " decremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
+            continue;
+        }
 
         /*
             Semaphore value meanings:
-                0 = available semaphore
-                1 = unaviable semaphore
-                2 = buffer for if two grab semaphore
-                3 = no more data available
-                4 = most recent program to use semaphore
-                    has written back to Santa Claus
+                0 = no more data available
+                1 = most recent program is done
+                2 = available semaphore
+                3 = unaviable semaphore
         */
 
         ifstream file;
@@ -142,7 +130,7 @@ int main(int argc, char *argv[]){
         if(random != i){
             data += "\nCharacters read: " + to_string(position + i);
         }
-        
+
         // String pipe terminator
         data += '^';
         file.close();
@@ -163,29 +151,26 @@ int main(int argc, char *argv[]){
         // Means EOF was hit
         bool done = false;
         if(random != i){
-            // Increment to 3 to let everyone know data is empty
-            operations->sem_op = 2;
+            // Decrement to 0 to let everyone know data is empty
+            operations->sem_op = -3;
             if(semop(atoi(argv[3]), operations, 1) != 0){
-                cout << "Failed to set value to 3: " << strerror(errno) << endl;
+                cout << "Failed to set value to -3: " << strerror(errno) << endl;
                 exit(1);
             }
-            operations->sem_op = 1;
-            cout << argv[5] << " incremented#3 to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
+            cout << argv[5] << " decremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
             done = true;
 
-            // Put the number of characters read into pipe
         }
 
-        // For last iteration to not set to 2
+        // For last iteration
         if(!done){
-            // Increment to 4 for Santa Claus program
-            operations->sem_op = 3;
+            // Increment to 1 for Santa Claus program
+            operations->sem_op = -2;
             if(semop(atoi(argv[3]), operations, 1) != 0){
-                cout << "Failed to set value to 3: " << strerror(errno) << endl;
+                cout << "Failed to set value to -1: " << strerror(errno) << endl;
                 exit(1);
             }
-            operations->sem_op = 1;
-            cout << argv[5] << " incremented to#4 " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
+            cout << argv[5] << " decremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
         }
     }
 
