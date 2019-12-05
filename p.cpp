@@ -140,7 +140,6 @@ int main(int argc, char *argv[]){
         shm_data = argv[5] + to_string(i + position);
         char *data_pointer = (char *)shmat(atoi(argv[4]), (void *)0, 0);
         strcpy(data_pointer, shm_data.c_str());
-        //cout << data_pointer << endl;
         shmdt(data_pointer);
 
         // Write data to Santa Claus

@@ -61,7 +61,7 @@ int main(int argc, char *argv[]){
     }
 
     // Create shared memory segment
-    int shmid = shmget(IPC_PRIVATE, 30, 0666 | IPC_CREAT); 
+    int shmid = shmget(IPC_PRIVATE, 100, 0666 | IPC_CREAT); 
     if(shmid < 0){
         cout << "Error creating shared memory: " << strerror(errno)  << endl;
         exit(1);
@@ -246,31 +246,34 @@ int main(int argc, char *argv[]){
         file.open("hw9.out", fstream::app);
 cout << "here1" << endl;
         // Get shared memory segment
-        string shm_data = (char *)shmat(shmid, 0, 0);
+        char *shm_data = (char *)shmat(shmid, 0, 0);
 cout << "here2" << endl;
         //shmdt(shm_data.c_str());
-        string program = shm_data.substr(0, 3);
+        char buff[4];
+        memcpy(&buff, shm_data, 3);
+        buff[4] = '\0';
+        //string program = shm_data.substr(0, 3);
 
 cout << "here3" << endl;
         // Check which child returns data
         string data;
-        if(program == "_p1"){
+        if(strcmp(buff, "_p1") == 0){
             data = readFromPipe(pipe1[0]); 
-        } else if(program == "_p2"){
+        } else if(strcmp(buff, "_p2") == 0){
             data = readFromPipe(pipe2[0]); 
-        } else if(program == "_p3"){
+        } else if(strcmp(buff, "_p3") == 0){
             data = readFromPipe(pipe3[0]); 
-        } else if(program == "_p4"){
+        } else if(strcmp(buff, "_p4") == 0){
             data = readFromPipe(pipe4[0]); 
-        } else if(program == "_p5"){
+        } else if(strcmp(buff, "_p5") == 0){
             data = readFromPipe(pipe5[0]); 
-        } else if(program == "_p6"){
+        } else if(strcmp(buff, "_p6") == 0){
             data = readFromPipe(pipe6[0]); 
-        } else if(program == "_p7"){
+        } else if(strcmp(buff, "_p7") == 0){
             data = readFromPipe(pipe7[0]); 
-        } else if(program == "_p8"){
+        } else if(strcmp(buff, "_p8") == 0){
             data = readFromPipe(pipe8[0]); 
-        } else if(program == "_p9"){
+        } else if(strcmp(buff, "_p9") == 0){
             data = readFromPipe(pipe9[0]); 
         }
 
@@ -290,7 +293,8 @@ cout << "here3" << endl;
         }
     }
 
-    free(operations);
+    //shmdt(shm_data.c_str());
+    //free(operations);
 
     waitpid(_p1, 0, 0);
     waitpid(_p2, 0, 0);
