@@ -247,7 +247,7 @@ int main(int argc, char *argv[]){
 cout << "here1" << endl;
         // Get shared memory segment
         string shm_data = (char *)shmat(shmid, 0, 0);
-        cout << "here2" << endl;
+cout << "here2" << endl;
         //shmdt(shm_data.c_str());
         string program = shm_data.substr(0, 3);
 
