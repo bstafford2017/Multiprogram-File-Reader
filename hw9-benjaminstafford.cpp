@@ -34,7 +34,7 @@ string readFromPipe(int readId){
         data += character;
     }
     //cout << endl;
-    //cout << data << endl;
+    cout << data << endl;
     return data;
 }
 
@@ -49,6 +49,13 @@ int main(int argc, char *argv[]){
         cout << "Error creating semaphore: " << strerror(errno) << endl;
         exit(1);
     }
+
+    // Create second semaphore
+    /*int sem_value_2 = semget(IPC_PRIVATE, 1, IPC_CREAT | 0660);
+    if(sem_value_2 < 0){
+        cout << "Error creating semaphore: " << strerror(errno) << endl;
+        exit(1);
+    }*/
 
     // Create shared memory segment
     int shmid = shmget(IPC_PRIVATE, 30, 0666 | IPC_CREAT); 
@@ -212,7 +219,6 @@ int main(int argc, char *argv[]){
     while(semctl(sem_value, 0, GETVAL, 0) != 3){
 
         // Wait until a program has written back
-        int result = 0;
         while(1){
             if(semctl(sem_value, 0, GETVAL, 0) < 0){
                 cout << "Error getting semaphore value: " << strerror(errno) << endl;
@@ -277,8 +283,9 @@ int main(int argc, char *argv[]){
                 cout << "Failed to set value to 0: " << strerror(errno) << endl;
                 exit(1);
             }
-            //cout << "SC decremented to " << semctl(sem_value, 0, GETVAL, 0) << endl;
+            cout << "SC decremented to " << semctl(sem_value, 0, GETVAL, 0) << endl;
         }
+        cout << "santa " << semctl(sem_value, 0, GETVAL, 0) << endl;
     }
 
     waitpid(_p1, 0, 0);

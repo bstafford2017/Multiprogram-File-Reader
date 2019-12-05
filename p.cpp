@@ -20,12 +20,12 @@ int main(int argc, char *argv[]){
     struct sembuf *operations = (struct sembuf *)calloc(sizeof(sembuf), 1);
     operations->sem_num = 0;
 	operations->sem_op = 1;
-    operations->sem_flg = IPC_NOWAIT;
+    operations->sem_flg = 0;
 
     struct sembuf *sub = (struct sembuf *)calloc(sizeof(sembuf), 1);
     sub->sem_num = 0;
 	sub->sem_op = -1;
-    sub->sem_flg = IPC_NOWAIT;
+    sub->sem_flg = 0;
 
     //for(int i = 0; i < 6; i++){
         //cout << argv[i] << " ";
@@ -40,7 +40,6 @@ int main(int argc, char *argv[]){
 
         // Wait until semaphore is available
         while(1){
-            //result = semctl(atoi(argv[3]), 0, GETVAL, 0);
             if(semctl(atoi(argv[3]), 0, GETVAL, 0) < 0){
                 cout << "Error getting semaphore value: " << strerror(errno) << endl;
                 exit(1);
@@ -52,7 +51,7 @@ int main(int argc, char *argv[]){
                     cout << "Failed to set value to 1: " << strerror(errno) << endl;
                     exit(1);
                 }
-                //cout << argv[5] << " incremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
+                cout << argv[5] << " incremented#1 to  " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
                 break;
             }
             
@@ -65,21 +64,43 @@ int main(int argc, char *argv[]){
                 //cout << argv[5] << " exiting" << endl;
                 exit(0);
             }
-            //usleep(1000);
+            //cout << argv[5] << " waiting" << endl;
+            //sleep(5);
+            usleep(1000);
+            //cout << argv[5] << " stopped waiting" << endl;
         }
 
         // Check if two grabbed the semaphore, then decrement
-        if(semctl(atoi(argv[3]), 0, GETVAL, 0) == 2){
+        if(semctl(atoi(argv[3]), 0, GETVAL, 0) != 1){
             if(semop(atoi(argv[3]), sub, 1) != 0){
                 cout << "Failed to set value to 1: " << strerror(errno) << endl;
                 exit(1);
             }
-            //cout << argv[5] << " decremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
+            cout << argv[5] << " decremented#2 to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
+            continue;
             close(atoi(argv[2]));
             free(operations);
-            //cout << argv[5] << " exiting" << endl;
+            cout << argv[5] << " exiting" << endl;
             exit(0);
         }
+
+        /*bool grabbedTwo = false;
+        if(semctl(atoi(argv[3]), 0, GETVAL, 0) == 2){
+            semop(atoi(argv[3]), sub, 1);
+            cout << argv[5] << " decremented--2 to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
+            grabbedTwo = true;
+            exit(1);
+        } else if(semctl(atoi(argv[3]), 0, GETVAL, 0) == 3){
+            sub->sem_op = -2;
+            semop(atoi(argv[3]), sub, 1);
+            cout << argv[5] << " decremented--2 to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
+            grabbedTwo = true;
+            sub->sem_op = -1;
+            exit(1);
+        }
+        if(grabbedTwo){
+            continue;
+        }*/
 
         /*
             Semaphore value meanings:
@@ -148,7 +169,8 @@ int main(int argc, char *argv[]){
                 cout << "Failed to set value to 3: " << strerror(errno) << endl;
                 exit(1);
             }
-            //cout << argv[5] << " incremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
+            operations->sem_op = 1;
+            cout << argv[5] << " incremented#3 to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
             done = true;
 
             // Put the number of characters read into pipe
@@ -163,7 +185,7 @@ int main(int argc, char *argv[]){
                 exit(1);
             }
             operations->sem_op = 1;
-            //cout << argv[5] << " incremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
+            cout << argv[5] << " incremented to#4 " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
         }
     }
 
