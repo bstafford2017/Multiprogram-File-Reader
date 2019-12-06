@@ -61,7 +61,7 @@ int main(int argc, char *argv[]){
     }
 
     // Create shared memory segment
-    int shmid = shmget(IPC_PRIVATE, 100, 0666 | IPC_CREAT); 
+    int shmid = shmget(IPC_PRIVATE, 100, 0666 | IPC_CREAT | IPC_EXCL); 
     if(shmid < 0){
         cout << "Error creating shared memory: " << strerror(errno)  << endl;
         exit(1);
@@ -218,6 +218,7 @@ int main(int argc, char *argv[]){
     }
 
     // While the file is not complete
+    char *shm_data = NULL;
     bool done = false;
     while(1){
 
@@ -245,9 +246,11 @@ int main(int argc, char *argv[]){
         ofstream file;
         file.open("hw9.out", fstream::app);
         // Get shared memory segment
-        char *shm_data = (char *)shmat(shmid, 0, 0);
+        // Fails here after 360k characters
+        shm_data = (char *)shmat(shmid, 0, 0);
         char buff[4];
         memcpy(&buff, shm_data, 3);
+        shmdt(shm_data);
         buff[4] = '\0';
 
         //string program = shm_data.substr(0, 3);
@@ -290,8 +293,7 @@ int main(int argc, char *argv[]){
         }
     }
 
-    //free(operations);
-    shmdt(0);
+    free(operations);
 
     waitpid(_p1, 0, 0);
     waitpid(_p2, 0, 0);

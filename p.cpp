@@ -66,8 +66,7 @@ int main(int argc, char *argv[]){
                 break;
             }
             //cout << argv[5] << " waiting" << endl;
-            //sleep(5);
-            usleep(2000);
+            usleep(1000);
             //cout << argv[5] << " stopped waiting" << endl;
         }
 
@@ -113,19 +112,21 @@ int main(int argc, char *argv[]){
         }
 
         // Get file position
-        string shm_data = (char *)shmat(atoi(argv[4]), (void *)0, 0);
+        char *memory = (char *)shmat(atoi(argv[4]), (void *)0, 0);
+        string shm_data(memory);
         int position = atoi(shm_data.substr(3, shm_data.size() - 1).c_str());
-
 
         if(counter == 1000){
             cout << "working . . ." << endl;
             counter = 0;
         }
         
-        //cout << position << endl;
+        cout << position << endl;
+        if(position != 0){
         char *waste = (char *)calloc(sizeof(char), position + 1);
         file.read(waste, position);
         free(waste);
+        }
 
         // Read until i equals random
         int i = 0;
@@ -147,8 +148,8 @@ int main(int argc, char *argv[]){
 
         // Write random to shared memory
         shm_data = argv[5] + to_string(i + position);
-        char *data_pointer = (char *)shmat(atoi(argv[4]), (void *)0, 0);
-        strcpy(data_pointer, shm_data.c_str());
+        strcpy(memory, shm_data.c_str());
+        shmdt(memory);
 
         // Write data to Santa Claus
         int write_val = write(atoi(argv[2]), data.c_str(), data.length());
@@ -189,5 +190,5 @@ int main(int argc, char *argv[]){
     shmdt(0);
     free(operations);
     free(sub);
-    cout << argv[5] << " exiting" << endl;
+    //cout << argv[5] << " exiting" << endl;
 }
