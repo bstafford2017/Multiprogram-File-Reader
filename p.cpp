@@ -35,7 +35,10 @@ int main(int argc, char *argv[]){
     // Close read
     close(atoi(argv[1]));
 
+    int counter = 0;
+
     // While the file is not complete
+    bool complete = false;
     while(1){
 
         // Wait until semaphore is available
@@ -59,11 +62,8 @@ int main(int argc, char *argv[]){
             //cout << result;
             // If file is completely read
             if(semctl(atoi(argv[3]), 0, GETVAL, 0) == 0){
-                close(atoi(argv[2]));
-                free(operations);
-                free(sub);
-                cout << argv[5] << " exiting" << endl;
-                exit(0);
+                complete = true;
+                break;
             }
             //cout << argv[5] << " waiting" << endl;
             //sleep(5);
@@ -84,6 +84,8 @@ int main(int argc, char *argv[]){
             cout << argv[5] << " exiting" << endl;
             exit(0);
         }*/
+
+        if(complete) break;
 
         // If multiple grabs, decrement and continue
         if(semctl(atoi(argv[3]), 0, GETVAL, 0) != 3){
@@ -113,7 +115,14 @@ int main(int argc, char *argv[]){
         // Get file position
         string shm_data = (char *)shmat(atoi(argv[4]), (void *)0, 0);
         int position = atoi(shm_data.substr(3, shm_data.size() - 1).c_str());
-        cout << position << endl;
+
+
+        if(counter == 1000){
+            cout << "working . . ." << endl;
+            counter = 0;
+        }
+        
+        //cout << position << endl;
         char *waste = (char *)calloc(sizeof(char), position + 1);
         file.read(waste, position);
         free(waste);
@@ -140,7 +149,6 @@ int main(int argc, char *argv[]){
         shm_data = argv[5] + to_string(i + position);
         char *data_pointer = (char *)shmat(atoi(argv[4]), (void *)0, 0);
         strcpy(data_pointer, shm_data.c_str());
-        shmdt(data_pointer);
 
         // Write data to Santa Claus
         int write_val = write(atoi(argv[2]), data.c_str(), data.length());
@@ -172,10 +180,14 @@ int main(int argc, char *argv[]){
             }
             //cout << argv[5] << " decremented to " << semctl(atoi(argv[3]), 0, GETVAL, 0) << endl;
         }
+
+        counter++;
     }
 
-    // Close write
+    // Exit
     close(atoi(argv[2]));
+    shmdt(0);
     free(operations);
     free(sub);
+    cout << argv[5] << " exiting" << endl;
 }

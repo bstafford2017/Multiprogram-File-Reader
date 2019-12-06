@@ -34,7 +34,7 @@ string readFromPipe(int readId){
         data += character;
     }
     //cout << endl;
-    cout << data << endl;
+    //cout << data << endl;
     return data;
 }
 
@@ -69,7 +69,7 @@ int main(int argc, char *argv[]){
 
     char *inital_data = (char *)shmat(shmid, (void *)0, 0);
     strcpy(inital_data, "_p_0");
-    shmdt(inital_data);
+    shmdt(0);
 
     int pipe1[2], pipe2[2], pipe3[2], pipe4[2], pipe5[2], pipe6[2], pipe7[2], pipe8[2], pipe9[2];
 
@@ -244,17 +244,14 @@ int main(int argc, char *argv[]){
 
         ofstream file;
         file.open("hw9.out", fstream::app);
-cout << "here1" << endl;
         // Get shared memory segment
         char *shm_data = (char *)shmat(shmid, 0, 0);
-cout << "here2" << endl;
-        //shmdt(shm_data.c_str());
         char buff[4];
         memcpy(&buff, shm_data, 3);
         buff[4] = '\0';
+
         //string program = shm_data.substr(0, 3);
 
-cout << "here3" << endl;
         // Check which child returns data
         string data;
         if(strcmp(buff, "_p1") == 0){
@@ -293,8 +290,8 @@ cout << "here3" << endl;
         }
     }
 
-    //shmdt(shm_data.c_str());
     //free(operations);
+    shmdt(0);
 
     waitpid(_p1, 0, 0);
     waitpid(_p2, 0, 0);
