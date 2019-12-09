@@ -116,12 +116,12 @@ int main(int argc, char *argv[]){
         string shm_data(memory);
         int position = atoi(shm_data.substr(3, shm_data.size() - 1).c_str());
 
-        if(counter == 1000){
-            cout << "working . . ." << endl;
+        if(counter == 50){
+            cout << "Characters read: " << position << endl;
             counter = 0;
         }
         
-        cout << position << endl;
+        //cout << position << endl;
         if(position != 0){
         char *waste = (char *)calloc(sizeof(char), position + 1);
         file.read(waste, position);

@@ -1,6 +1,7 @@
 // Benjamin Stafford
 // 11/16/19
 // To compile: make
+// NOTE: This assignment DOES work with large files (+100K) but does take some time to run.
 
 #include <unistd.h>
 #include <errno.h>
